@@ -174,7 +174,7 @@ export default function Home() {
       setStep('done');
     } catch (error) {
       console.error(error);
-      window.alert('Le mail n\'a pas pu être envoyé. Vérifie EMAIL_USER, EMAIL_PASS et EMAIL_TO dans .env.local.');
+      window.alert('Le mail n\'a pas pu être envoyé. Vérifie GMAIL_USER, GMAIL_APP_PASSWORD et ALERT_EMAIL dans .env.local.');
       setStep('form');
     }
   };
