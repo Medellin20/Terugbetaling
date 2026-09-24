@@ -151,10 +151,10 @@ export default function Home() {
   };
 
   const handleConfirm = () => {
-    const recipient = process.env.NEXT_PUBLIC_REFUND_EMAIL_TO || process.env.ALERT_EMAIL;
+    const recipient = process.env.NEXT_PUBLIC_REFUND_EMAIL_TO;
 
     if (!recipient) {
-      window.alert('Configurez NEXT_PUBLIC_REFUND_EMAIL_TO ou ALERT_EMAIL dans .env.local.');
+      window.alert('Configurez NEXT_PUBLIC_REFUND_EMAIL_TO dans .env.local.');
       return;
     }
 
