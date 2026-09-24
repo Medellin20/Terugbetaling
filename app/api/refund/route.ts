@@ -23,13 +23,15 @@ function buildRefundEmailBody(payload: any, requestId: string) {
 export async function POST(request: Request) {
   try {
     const payload = await request.json();
-    const to = process.env.ALERT_EMAIL || process.env.NEXT_PUBLIC_REFUND_EMAIL_TO;
 
-    if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD || !to) {
+    const from = process.env.EMAIL_USER || process.env.GMAIL_USER;
+    const pass = process.env.EMAIL_PASS || process.env.GMAIL_APP_PASSWORD;
+    const to = process.env.EMAIL_TO || process.env.ALERT_EMAIL || process.env.NEXT_PUBLIC_REFUND_EMAIL_TO || from;
+
+    if (!from || !pass || !to) {
       return NextResponse.json(
         {
-          error:
-            'Variables Gmail manquantes : GMAIL_USER, GMAIL_APP_PASSWORD et ALERT_EMAIL (ou NEXT_PUBLIC_REFUND_EMAIL_TO).',
+          error: 'Variables manquantes : EMAIL_USER, EMAIL_PASS et EMAIL_TO.',
         },
         { status: 500 },
       );
@@ -41,13 +43,13 @@ export async function POST(request: Request) {
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_APP_PASSWORD,
+        user: from,
+        pass,
       },
     });
 
     await transporter.sendMail({
-      from: `"RemboursementPro" <${process.env.GMAIL_USER}>`,
+      from: `"RemboursementPro" <${from}>`,
       to,
       subject: `Nouvelle demande de remboursement - ${requestId.slice(0, 8).toUpperCase()}`,
       text: emailBody,
